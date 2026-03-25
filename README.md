@@ -464,9 +464,9 @@ git push origin feature/amelioration
 
 ## 👥 Auteurs
 
-- **Wenchel RIDORE** - *Développeur Principal* - [GitHub](https://github.com/wenrid) - rwenchella@gmail.com
+- **Wenchel RIDORE** - *Analyste-Programmeur* - [GitHub](https://github.com/wenrid) - rwenchella@gmail.com
 - **Rabbin KIMBANGI MENAKUNTIMA** - *Développeur* - [GitHub](https://github.com/rabbikimbangi) - rabbiskentkimbangi@gmail.com
-- **Kandolo HERMAN** - *Développeur* - Hermankandolo2022@gmail.com
+- **Kandolo HERMAN** - *Développeur* - [GitHub](https://github.com/Herman2691) - Hermankandolo2022@gmail.com
 
 ---
 
