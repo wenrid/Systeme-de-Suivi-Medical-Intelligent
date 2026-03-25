@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Analyse de Risque - {{ patient.nom_complet }}{% endblock %}
+
+{% block content %}
+<style>
+    .risque-header {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .score-display {
+        text-align: center;
+        padding: 40px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .score-circle {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: bold;
+        color: white;
+        margin: 20px auto;
+    }
+    
+    .score-critique { background: #e74c3c; }
+    .score-eleve { background: #e67e22; }
+    .score-modere { background: #f39c12; }
+    .score-faible { background: #27ae60; }
+    
+    .info-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .info-card h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+    }
+    
+    .facteur-item {
+        padding: 12px;
+        background: #f8f9fa;
+        border-left: 4px solid #e74c3c;
+        margin-bottom: 10px;
+        border-radius: 3px;
+    }
+    
+    .recommandation-item {
+        padding: 12px;
+        background: #d1ecf1;
+        border-left: 4px solid #0c5460;
+        margin-bottom: 10px;
+        border-radius: 3px;
+    }
+</style>
+
+<div class="risque-header">
+    <h1>🚨 Analyse de Risque Patient</h1>
+    <h2>{{ patient.nom_complet }}</h2>
+    <p>{{ patient.age }} ans | Code: {{ patient.code_patient }}</p>
+</div>
+
+<!-- Score de risque -->
+<div class="score-display">
+    <h3>Score de Risque Global</h3>
+    <div class="score-circle score-{% if niveau == 'Critique' %}critique{% elif niveau == 'Élevé' %}eleve{% elif niveau == 'Modéré' %}modere{% else %}faible{% endif %}">
+        {{ score }}/100
+    </div>
+    <h2 {% if niveau == 'Critique' %}style="margin-top: 20px; color: #e74c3c;"{% elif niveau == 'Élevé' %}style="margin-top: 20px; color: #e67e22;"{% elif niveau == 'Modéré' %}style="margin-top: 20px; color: #f39c12;"{% else %}style="margin-top: 20px; color: #27ae60;"{% endif %}>
+        Niveau : {{ niveau }}
+    </h2>
+</div>
+
+<!-- Informations patient -->
+<div class="info-card">
+    <h3>👤 Informations Patient</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Nom complet :</strong> {{ patient.nom_complet }}</p>
+            <p><strong>Date de naissance :</strong> {{ patient.date_naissance|date:"d/m/Y" }}</p>
+            <p><strong>Âge :</strong> {{ patient.age }} ans</p>
+            <p><strong>Sexe :</strong> {{ patient.get_sexe_display }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Groupe sanguin :</strong> {{ patient.groupe_sanguin|default:"Non renseigné" }}</p>
+            <p><strong>Téléphone :</strong> {{ patient.telephone|default:"Non renseigné" }}</p>
+            <p><strong>Ville :</strong> {{ patient.ville }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Facteurs de risque -->
+<div class="info-card">
+    <h3>⚠️ Facteurs de Risque Identifiés</h3>
+    {% if facteurs %}
+        {% for facteur in facteurs %}
+        <div class="facteur-item">
+            <strong>•</strong> {{ facteur }}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucun facteur de risque majeur identifié</p>
+    {% endif %}
+</div>
+
+<!-- Maladies chroniques -->
+<div class="info-card">
+    <h3>💊 Maladies Chroniques</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <p>{% if patient.diabete %}✅{% else %}❌{% endif %} Diabète</p>
+            <p>{% if patient.hypertension %}✅{% else %}❌{% endif %} Hypertension</p>
+            <p>{% if patient.asthme %}✅{% else %}❌{% endif %} Asthme</p>
+        </div>
+        <div class="col-md-6">
+            <p>{% if patient.epilepsie %}✅{% else %}❌{% endif %} Épilepsie</p>
+            <p>{% if patient.drepanocytose %}✅{% else %}❌{% endif %} Drépanocytose</p>
+            <p>{% if patient.vih %}✅{% else %}❌{% endif %} VIH</p>
+        </div>
+    </div>
+    {% if patient.autre_maladie_chronique %}
+        <p><strong>Autre :</strong> {{ patient.autre_maladie_chronique }}</p>
+    {% endif %}
+</div>
+
+<!-- Recommandations IA -->
+<div class="info-card">
+    <h3>🤖 Recommandations IA</h3>
+    {% if recommandations %}
+        {% for reco in recommandations %}
+        <div class="recommandation-item">
+            {{ reco }}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucune recommandation particulière</p>
+    {% endif %}
+</div>
+
+<!-- Antécédents -->
+{% if patient.allergies or patient.antecedents_medicaux or patient.antecedents_chirurgicaux %}
+<div class="info-card">
+    <h3>📋 Antécédents</h3>
+    {% if patient.allergies %}
+        <p><strong>Allergies :</strong> {{ patient.allergies }}</p>
+    {% endif %}
+    {% if patient.antecedents_medicaux %}
+        <p><strong>Antécédents médicaux :</strong> {{ patient.antecedents_medicaux }}</p>
+    {% endif %}
+    {% if patient.antecedents_chirurgicaux %}
+        <p><strong>Antécédents chirurgicaux :</strong> {{ patient.antecedents_chirurgicaux }}</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="text-center mb-4">
+    <a href="{% url 'patients:detail_patient' patient.id %}" class="btn btn-primary">
+        Voir fiche patient complète
+    </a>
+    <a href="{% url 'stats_medicales:analyse_ia_dashboard' %}" class="btn btn-secondary">
+        ← Retour aux analyses IA
+    </a>
+</div>
+
+{% endblock %}

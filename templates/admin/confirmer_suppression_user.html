@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmer Suppression{% endblock %}
+
+{% block content %}
+<style>
+    .delete-header {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .confirm-card {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    
+    .warning-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+    }
+    
+    .user-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        text-align: left;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        flex: 1;
+        padding: 15px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+</style>
+
+<div class="delete-header">
+    <h1>🗑️ Confirmer la Suppression</h1>
+    <p>Action irréversible</p>
+</div>
+
+<div class="confirm-card">
+    <div class="warning-icon">⚠️</div>
+    
+    <h2>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</h2>
+    
+    <div class="user-info">
+        <p><strong>Nom complet :</strong> {{ user_obj.get_full_name }}</p>
+        <p><strong>Username :</strong> @{{ user_obj.username }}</p>
+        <p><strong>Email :</strong> {{ user_obj.email|default:"Non renseigné" }}</p>
+        <p><strong>Rôle :</strong> {{ user_obj.get_role_display }}</p>
+        {% if user_obj.role == 'medecin' %}
+            <p><strong>Spécialité :</strong> {{ user_obj.specialite|default:"Non spécifiée" }}</p>
+        {% endif %}
+    </div>
+    
+    <p style="color: #e74c3c; font-weight: bold; margin: 20px 0;">
+        ⚠️ Cette action est IRRÉVERSIBLE et supprimera définitivement toutes les données associées !
+    </p>
+    
+    <form method="post" action="">
+        {% csrf_token %}
+        <div class="btn-group">
+            <button type="submit" class="btn btn-danger">
+                ✅ Oui, supprimer définitivement
+            </button>
+            <a href="{% url 'admin_views:gestion_utilisateurs' %}" class="btn btn-secondary">
+                ❌ Non, annuler
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

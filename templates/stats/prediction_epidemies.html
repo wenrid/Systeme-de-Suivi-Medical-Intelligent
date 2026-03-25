@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+
+{% block title %}Prédiction d'Épidémies{% endblock %}
+
+{% block content %}
+<style>
+    .epidemic-header {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .section-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .section-card h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+    }
+    
+    .risque-critique {
+        background: #fadbd8;
+        border-left: 5px solid #e74c3c;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    
+    .risque-eleve {
+        background: #fdeaa8;
+        border-left: 5px solid #f39c12;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    
+    .risque-modere {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    
+    .risque-faible {
+        background: #d5f4e6;
+        border-left: 5px solid #27ae60;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    
+    .alerte-box {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .alerte-critique {
+        background: #f8d7da;
+        border-left: 4px solid #721c24;
+    }
+    
+    .alerte-attention {
+        background: #fff3cd;
+        border-left: 4px solid #856404;
+    }
+    
+    .epidemie-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 5px solid #e74c3c;
+    }
+    
+    .action-item {
+        padding: 10px;
+        background: #e3f2fd;
+        border-left: 3px solid #2196f3;
+        margin: 8px 0;
+        border-radius: 3px;
+    }
+    
+    .pic-badge {
+        background: #e74c3c;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 30px 0;
+    }
+</style>
+
+<div class="epidemic-header">
+    <h1>🦠 Prédiction d'Épidémies</h1>
+    <p>Analyse prédictive et détection précoce des pics de maladies</p>
+</div>
+
+<!-- Analyse des tendances temporelles -->
+<div class="section-card">
+    <h3>📈 Tendances et Prédictions des Consultations</h3>
+    
+    {% if tendances.statut == "success" %}
+        <!-- Évaluation du risque -->
+        <div class="risque-{{ tendances.risque_epidemique.niveau }}">
+            <h4>{{ tendances.risque_epidemique.message }}</h4>
+            <p><strong>Augmentation prévue :</strong> {{ tendances.risque_epidemique.pourcentage }}%</p>
+            
+            <div style="margin-top: 15px;">
+                <strong>Actions recommandées :</strong>
+                {% for action in tendances.risque_epidemique.actions %}
+                    <div class="action-item">{{ action }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Graphique des tendances -->
+        <div class="chart-container">
+            <canvas id="tendancesChart"></canvas>
+        </div>
+        
+        <!-- Pics détectés -->
+        {% if tendances.pics_detectes %}
+        <div style="margin-top: 30px;">
+            <h4>⚠️ Pics anormaux détectés ({{ tendances.pics_detectes|length }})</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+                {% for pic in tendances.pics_detectes %}
+                <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #f39c12;">
+                    <strong>📅 {{ pic.date }}</strong><br>
+                    <span class="pic-badge">{{ pic.valeur }} consultations</span><br>
+                    <small>Écart de {{ pic.ecart }} par rapport à la moyenne ({{ pic.moyenne }})</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="alert alert-warning">
+            {{ tendances.message }}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Analyse des maladies chroniques -->
+<div class="section-card">
+    <h3>💊 Prévalence des Maladies Chroniques</h3>
+    
+    <p><strong>Total de patients analysés :</strong> {{ maladies_tendances.total_patients }}</p>
+    
+    <!-- Alertes -->
+    {% if maladies_tendances.alertes %}
+    <div style="margin: 20px 0;">
+        <h4>🚨 Alertes de Prévalence</h4>
+        {% for alerte in maladies_tendances.alertes %}
+        <div class="alerte-box alerte-{{ alerte.type }}">
+            <strong>{{ alerte.message }}</strong>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Tableau de prévalence -->
+    <table class="table table-striped" style="margin-top: 20px;">
+        <thead class="table-dark">
+            <tr>
+                <th>Maladie</th>
+                <th>Nombre de cas</th>
+                <th>Taux de prévalence</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for maladie, data in maladies_tendances.prevalence.items %}
+            <tr>
+                <td><strong>{{ maladie }}</strong></td>
+                <td>{{ data.cas }}</td>
+                <td>
+                    <strong {% if data.statut == 'critique' %}style="color: #e74c3c;"{% elif data.statut == 'élevé' %}style="color: #f39c12;"{% endif %}>
+                        {{ data.taux }}%
+                    </strong>
+                </td>
+                <td>
+                    <span class="badge {% if data.statut == 'critique' %}bg-danger{% elif data.statut == 'élevé' %}bg-warning{% elif data.statut == 'modéré' %}bg-info{% else %}bg-success{% endif %}">
+                        {{ data.statut|upper }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Épidémies locales détectées -->
+<div class="section-card">
+    <h3>🗺️ Épidémies Locales Détectées</h3>
+    
+    {% if epidemies_locales %}
+        <p class="alert alert-danger">
+            <strong>⚠️ {{ epidemies_locales|length }} épidémie(s) locale(s) détectée(s)</strong>
+        </p>
+        
+        {% for epidemie in epidemies_locales %}
+        <div class="epidemie-card">
+            <div style="display: flex; justify-content: between; align-items: start;">
+                <div style="flex: 1;">
+                    <h4 style="margin: 0 0 10px 0;">
+                        {% if epidemie.niveau == 'critique' %}🔴{% else %}🟠{% endif %}
+                        {{ epidemie.ville }} - {{ epidemie.maladie }}
+                    </h4>
+                    <p style="margin: 5px 0;">
+                        <strong>Taux d'infection :</strong> 
+                        <span style="font-size: 24px; color: #e74c3c; font-weight: bold;">{{ epidemie.taux }}%</span>
+                    </p>
+                    <p style="margin: 5px 0;">
+                        <strong>{{ epidemie.cas }}</strong> cas sur {{ epidemie.total_patients }} patients
+                    </p>
+                    <p style="margin: 5px 0;">
+                        <strong>Niveau :</strong> 
+                        <span class="badge {% if epidemie.niveau == 'critique' %}bg-danger{% else %}bg-warning{% endif %}">
+                            {{ epidemie.niveau|upper }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #dee2e6;">
+                <strong>🔮 Recommandation :</strong>
+                <div class="action-item">{{ epidemie.recommandation }}</div>
+            </div>
+        </div>
+        {% endfor %}
+        
+    {% else %}
+        <div class="alert alert-success">
+            <strong>✅ Aucune épidémie locale détectée</strong><br>
+            La situation est stable dans toutes les zones géographiques.
+        </div>
+    {% endif %}
+</div>
+
+<div class="text-center mb-4">
+    <a href="{% url 'stats_medicales:analyse_ia_dashboard' %}" class="btn btn-secondary">
+        ← Retour aux analyses IA
+    </a>
+    <a href="{% url 'core:dashboard_analyste' %}" class="btn btn-primary">
+        Retour au dashboard
+    </a>
+</div>
+
+<!-- Chart.js pour les graphiques -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+var tendancesStatut = "{{ tendances.statut }}";
+
+if (tendancesStatut === "success") {
+    var tendancesData = JSON.parse('{{ tendances_json|escapejs }}');
+    
+    // Préparer les données pour le graphique
+    var dates = tendancesData.historique.dates;
+    var valeurs = tendancesData.historique.valeurs;
+    var moyenneMobile = tendancesData.historique.moyenne_mobile;
+    
+    // Ajouter les dates futures pour les prédictions
+    var derniereDate = new Date(dates[dates.length - 1]);
+    var datesPredictions = [];
+    for (var i = 1; i <= tendancesData.predictions.length; i++) {
+        var nouvelleDateobjet = new Date(derniereDate);
+        nouvelleDateobjet.setDate(derniereDate.getDate() + i);
+        datesPredictions.push(nouvelleDateobjet.toISOString().split('T')[0]);
+    }
+    
+    // Créer le graphique
+    var ctx = document.getElementById('tendancesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates.concat(datesPredictions),
+            datasets: [
+                {
+                    label: 'Consultations réelles',
+                    data: valeurs.concat(Array(datesPredictions.length).fill(null)),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Moyenne mobile (7 jours)',
+                    data: moyenneMobile.concat(Array(datesPredictions.length).fill(null)),
+                    borderColor: '#9b59b6',
+                    backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                    tension: 0.4,
+                    borderDash: [5, 5]
+                },
+                {
+                    label: 'Prédictions',
+                    data: Array(dates.length).fill(null).concat([valeurs[valeurs.length - 1]]).concat(tendancesData.predictions),
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderDash: [10, 5]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Évolution et Prédiction des Consultations',
+                    font: {
+                        size: 16
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Nombre de consultations'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+
+{% endblock %}

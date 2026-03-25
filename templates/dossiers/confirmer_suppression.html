@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer le Dossier{% endblock %}
+
+{% block content %}
+<style>
+    .confirm-container {
+        max-width: 600px;
+        margin: 50px auto;
+        text-align: center;
+    }
+    
+    .confirm-card {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .warning-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+    
+    .confirm-card h2 {
+        color: #e74c3c;
+        margin-bottom: 20px;
+    }
+    
+    .dossier-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 30px 0;
+        text-align: left;
+    }
+    
+    .dossier-info strong {
+        color: #2c3e50;
+    }
+    
+    .dossier-info p {
+        margin: 10px 0;
+        color: #7f8c8d;
+    }
+    
+    .confirm-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+    }
+    
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #c0392b;
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+    
+    .warning-text {
+        color: #e74c3c;
+        font-size: 14px;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="confirm-container">
+    <div class="confirm-card">
+        <div class="warning-icon">⚠️</div>
+        <h2>Confirmer la Suppression</h2>
+        <p>Êtes-vous sûr de vouloir supprimer ce dossier médical ?</p>
+        
+        <div class="dossier-info">
+            <p><strong>Patient :</strong> {{ dossier.patient.nom_complet }}</p>
+            <p><strong>Date :</strong> {{ dossier.date_consultation|date:"d/m/Y" }}</p>
+            <p><strong>Diagnostic :</strong> {{ dossier.diagnostic|truncatewords:10 }}</p>
+        </div>
+        
+        <p class="warning-text">
+            ⚠️ Cette action est irréversible. Toutes les données de ce dossier seront définitivement supprimées.
+        </p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="confirm-actions">
+                <a href="{% url 'dossiers:detail' dossier.pk %}" class="btn btn-secondary">
+                    Annuler
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    Oui, Supprimer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+
+{% block title %}Dossier - {{ dossier.patient.nom_complet }}{% endblock %}
+
+{% block content %}
+<style>
+    .detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .patient-info h2 {
+        margin: 0 0 10px 0;
+        font-size: 28px;
+    }
+    
+    .patient-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        transition: all 0.3s;
+        font-weight: 500;
+    }
+    
+    .btn-white {
+        background: white;
+        color: #667eea;
+    }
+    
+    .btn-white:hover {
+        background: #f8f9fa;
+    }
+    
+    .btn-warning {
+        background: #f39c12;
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+    }
+    
+    .section-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .section-card h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .info-row {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        padding: 12px 0;
+        border-bottom: 1px solid #ecf0f1;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+    
+    .info-value {
+        color: #2c3e50;
+    }
+    
+    .badge {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .badge-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .urgence-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .urgence-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    .urgence-faible .urgence-dot { background: #27ae60; }
+    .urgence-moyenne .urgence-dot { background: #f39c12; }
+    .urgence-elevee .urgence-dot { background: #e67e22; }
+    .urgence-critique .urgence-dot { background: #e74c3c; }
+    
+    .vitals-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .vital-card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .vital-label {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+    }
+    
+    .vital-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    
+    .vital-unit {
+        font-size: 14px;
+        color: #95a5a6;
+    }
+    
+    .text-content {
+        line-height: 1.6;
+        color: #2c3e50;
+        white-space: pre-wrap;
+    }
+    
+    .empty-text {
+        color: #95a5a6;
+        font-style: italic;
+    }
+    
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #3498db;
+        text-decoration: none;
+        margin-bottom: 20px;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="detail-container">
+    <a href="{% url 'dossiers:liste' %}" class="back-link">
+        ← Retour à la liste
+    </a>
+    
+    <div class="detail-header">
+        <div class="patient-info">
+            <h2>👤 {{ dossier.patient.nom_complet }}</h2>
+            <div class="patient-meta">
+                <span>📅 {{ dossier.date_consultation|date:"d/m/Y à H:i" }}</span>
+                <span>👨‍⚕️ Dr. {{ dossier.medecin.get_full_name }}</span>
+            </div>
+        </div>
+        <div class="header-actions">
+    <a href="{% url 'dossiers:exporter_pdf' dossier.pk %}" class="btn btn-white">
+        📄 Télécharger PDF
+    </a>
+    <a href="{% url 'dossiers:modifier' dossier.pk %}" class="btn btn-white">
+        ✏️ Modifier
+    </a>
+    <a href="{% url 'dossiers:supprimer' dossier.pk %}" class="btn btn-danger">
+        🗑️ Supprimer
+    </a>
+</div>
+    </div>
+
+    <div class="content-grid">
+        <div class="main-content">
+            <!-- Motif de consultation -->
+            <div class="section-card">
+                <h3>📋 Motif de Consultation</h3>
+                <p class="text-content">{{ dossier.motif_consultation }}</p>
+            </div>
+
+            <!-- Symptômes -->
+            {% if dossier.symptomes %}
+            <div class="section-card">
+                <h3>🩺 Symptômes Observés</h3>
+                <p class="text-content">{{ dossier.symptomes }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Examen clinique -->
+            <div class="section-card">
+                <h3>🔬 Examen Clinique</h3>
+                <div class="vitals-grid">
+                    {% if dossier.temperature %}
+                    <div class="vital-card">
+                        <div class="vital-label">Température</div>
+                        <div class="vital-value">{{ dossier.temperature }}<span class="vital-unit">°C</span></div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if dossier.tension_arterielle %}
+                    <div class="vital-card">
+                        <div class="vital-label">Tension</div>
+                        <div class="vital-value">{{ dossier.tension_arterielle }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if dossier.poids %}
+                    <div class="vital-card">
+                        <div class="vital-label">Poids</div>
+                        <div class="vital-value">{{ dossier.poids }}<span class="vital-unit">kg</span></div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if dossier.taille %}
+                    <div class="vital-card">
+                        <div class="vital-label">Taille</div>
+                        <div class="vital-value">{{ dossier.taille }}<span class="vital-unit">cm</span></div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if dossier.imc %}
+                    <div class="vital-card">
+                        <div class="vital-label">IMC</div>
+                        <div class="vital-value">{{ dossier.imc }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Diagnostic -->
+            <div class="section-card">
+                <h3>💊 Diagnostic</h3>
+                <p class="text-content">{{ dossier.diagnostic }}</p>
+                
+                {% if dossier.diagnostic_differentiel %}
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1;">
+                    <strong style="color: #7f8c8d;">Diagnostic différentiel :</strong>
+                    <p class="text-content">{{ dossier.diagnostic_differentiel }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Examens complémentaires -->
+            {% if dossier.examens_complementaires %}
+            <div class="section-card">
+                <h3>🔬 Examens Complémentaires</h3>
+                <p class="text-content">{{ dossier.examens_complementaires }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Prescription -->
+            {% if dossier.prescription %}
+            <div class="section-card">
+                <h3>💊 Prescription</h3>
+                <p class="text-content">{{ dossier.prescription }}</p>
+                
+                {% if dossier.posologie %}
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1;">
+                    <strong style="color: #7f8c8d;">Posologie :</strong>
+                    <p class="text-content">{{ dossier.posologie }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Recommandations -->
+            {% if dossier.recommandations %}
+            <div class="section-card">
+                <h3>📝 Recommandations au Patient</h3>
+                <p class="text-content">{{ dossier.recommandations }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Notes médicales -->
+            {% if dossier.notes_medicales %}
+            <div class="section-card">
+                <h3>📄 Notes Médicales</h3>
+                <p class="text-content">{{ dossier.notes_medicales }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="sidebar">
+            <!-- Informations générales -->
+            <div class="section-card">
+                <h3>ℹ️ Informations</h3>
+                
+                <div class="info-row">
+                    <div class="info-label">Statut</div>
+                    <div class="info-value">
+                        {% if dossier.statut == 'ouvert' %}
+                            <span class="badge badge-success">Ouvert</span>
+                        {% elif dossier.statut == 'ferme' %}
+                            <span class="badge badge-danger">Fermé</span>
+                        {% elif dossier.statut == 'en_attente' %}
+                            <span class="badge badge-warning">En attente</span>
+                        {% else %}
+                            <span class="badge badge-info">Archivé</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Urgence</div>
+                    <div class="info-value">
+                        <div class="urgence-indicator urgence-{{ dossier.urgence }}">
+                            <div class="urgence-dot"></div>
+                            <span>{{ dossier.get_urgence_display }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if dossier.date_prochain_rdv %}
+                <div class="info-row">
+                    <div class="info-label">Prochain RDV</div>
+                    <div class="info-value">{{ dossier.date_prochain_rdv|date:"d/m/Y" }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="info-row">
+                    <div class="info-label">Créé le</div>
+                    <div class="info-value">{{ dossier.date_creation|date:"d/m/Y H:i" }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Modifié le</div>
+                    <div class="info-value">{{ dossier.date_modification|date:"d/m/Y H:i" }}</div>
+                </div>
+            </div>
+
+            <!-- Informations patient -->
+            <div class="section-card">
+                <h3>👤 Patient</h3>
+                
+                <div class="info-row">
+                    <div class="info-label">Nom complet</div>
+                    <div class="info-value">{{ dossier.patient.nom_complet }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Âge</div>
+                    <div class="info-value">{{ dossier.patient.age }} ans</div>
+                </div>
+                
+                {% if dossier.patient.sexe %}
+                <div class="info-row">
+                    <div class="info-label">Sexe</div>
+                    <div class="info-value">{{ dossier.patient.get_sexe_display }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

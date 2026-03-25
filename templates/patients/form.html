@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ titre }}</h2>
+        <a href="{% url 'patients:liste_patients' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="needs-validation">
+        {% csrf_token %}
+        
+        <!-- Section Identité -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Identité</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.nom.label }} *</label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}
+                            <div class="text-danger">{{ form.nom.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.prenom.label }} *</label>
+                        {{ form.prenom }}
+                        {% if form.prenom.errors %}
+                            <div class="text-danger">{{ form.prenom.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.date_naissance.label }} *</label>
+                        {{ form.date_naissance }}
+                        {% if form.date_naissance.errors %}
+                            <div class="text-danger">{{ form.date_naissance.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">{{ form.lieu_naissance.label }}</label>
+                        {{ form.lieu_naissance }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.sexe.label }}</label>
+                        {{ form.sexe }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.groupe_sanguin.label }}</label>
+                        {{ form.groupe_sanguin }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.photo.label }}</label>
+                        {{ form.photo }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.photo_carte_identite.label }}</label>
+                        {{ form.photo_carte_identite }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Contact -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Contact</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.telephone.label }}</label>
+                        {{ form.telephone }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.telephone_secondaire.label }}</label>
+                        {{ form.telephone_secondaire }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.email.label }}</label>
+                    {{ form.email }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.adresse.label }}</label>
+                    {{ form.adresse }}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.quartier_commune.label }}</label>
+                        {{ form.quartier_commune }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.ville.label }}</label>
+                        {{ form.ville }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Contact d'urgence -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">Contact d'urgence</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.contact_urgence_nom.label }}</label>
+                        {{ form.contact_urgence_nom }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.contact_urgence_lien.label }}</label>
+                        {{ form.contact_urgence_lien }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.contact_urgence_telephone.label }}</label>
+                        {{ form.contact_urgence_telephone }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Antécédents médicaux -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Antécédents médicaux</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">{{ form.allergies.label }}</label>
+                    {{ form.allergies }}
+                </div>
+                
+                <h6>Maladies chroniques</h6>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ form.diabete }}
+                            <label class="form-check-label">{{ form.diabete.label }}</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ form.hypertension }}
+                            <label class="form-check-label">{{ form.hypertension.label }}</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ form.asthme }}
+                            <label class="form-check-label">{{ form.asthme.label }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ form.epilepsie }}
+                            <label class="form-check-label">{{ form.epilepsie.label }}</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ form.drepanocytose }}
+                            <label class="form-check-label">{{ form.drepanocytose.label }}</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ form.vih }}
+                            <label class="form-check-label">{{ form.vih.label }}</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ form.autre_maladie_chronique.label }}</label>
+                    {{ form.autre_maladie_chronique }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ form.traitements_en_cours.label }}</label>
+                    {{ form.traitements_en_cours }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ form.antecedents_chirurgicaux.label }}</label>
+                    {{ form.antecedents_chirurgicaux }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ form.antecedents_medicaux.label }}</label>
+                    {{ form.antecedents_medicaux }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ form.notes_medicales.label }}</label>
+                    {{ form.notes_medicales }}
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+            <a href="{% url 'patients:liste_patients' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

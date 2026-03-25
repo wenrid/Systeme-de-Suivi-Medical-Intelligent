@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer Patient{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Confirmer la suppression</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" role="alert">
+                        <h5 class="alert-heading"><strong>⚠️ Attention !</strong></h5>
+                        <p class="mb-0">Êtes-vous sûr de vouloir supprimer ce patient ?</p>
+                        <hr>
+                        <p class="mb-0"><strong>Cette action est irréversible et supprimera également tous les dossiers médicaux associés !</strong></p>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Informations du patient</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <strong>Code patient :</strong><br>
+                                    <span class="text-primary">{{ patient.code_patient }}</span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nom complet :</strong><br>
+                                    {{ patient.nom_complet }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Date de naissance :</strong><br>
+                                    {{ patient.date_naissance|date:"d/m/Y" }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Âge :</strong><br>
+                                    {{ patient.age }} ans
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Sexe :</strong><br>
+                                    {{ patient.get_sexe_display }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Téléphone :</strong><br>
+                                    {{ patient.telephone }}
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <strong>Ville :</strong><br>
+                                    {{ patient.ville }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-trash-alt"></i> Oui, supprimer définitivement
+                            </button>
+                            <a href="{% url 'patients:liste_patients' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> Non, annuler et retourner
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+```
+
+---
+
+## 📂 STRUCTURE FINALE
+
+Ton dossier `templates/patients/` doit maintenant contenir :
+```
+templates/
+└── patients/
+    ├── detail.html
+    ├── form.html
+    ├── liste.html
+    └── supprimer.html  ← NOUVEAU FICHIER

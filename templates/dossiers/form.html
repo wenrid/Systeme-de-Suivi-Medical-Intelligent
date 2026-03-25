@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} un Dossier Médical{% endblock %}
+
+{% block content %}
+<style>
+    .form-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .form-header {
+        margin-bottom: 30px;
+    }
+    
+    .form-section {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .form-section h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .form-grid-full {
+        grid-column: 1 / -1;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+    
+    .form-group label .required {
+        color: #e74c3c;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+        box-sizing: border-box;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3498db;
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        font-family: inherit;
+    }
+    
+    .help-text {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: #3498db;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #2980b9;
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+    
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 5px 0 0 0;
+    }
+    
+    .errorlist li {
+        color: #e74c3c;
+        font-size: 12px;
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>{{ action }} un Dossier Médical</h2>
+        <p style="color: #7f8c8d;">Remplissez les informations du dossier patient</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <strong>Erreurs dans le formulaire :</strong>
+        <ul>
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Section: Informations Patient -->
+        <div class="form-section">
+            <h3>👤 Informations Patient</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.patient.id_for_label }}">
+                        Patient <span class="required">*</span>
+                    </label>
+                    {{ form.patient }}
+                    {% if form.patient.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.patient.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.date_consultation.id_for_label }}">
+                        Date de Consultation <span class="required">*</span>
+                    </label>
+                    {{ form.date_consultation }}
+                    {% if form.date_consultation.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.date_consultation.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.motif_consultation.id_for_label }}">
+                        Motif de Consultation <span class="required">*</span>
+                    </label>
+                    {{ form.motif_consultation }}
+                    <div class="help-text">Raison principale de la visite</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Examen Clinique -->
+        <div class="form-section">
+            <h3>🩺 Examen Clinique</h3>
+            <div class="form-grid">
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.symptomes.id_for_label }}">Symptômes Observés</label>
+                    {{ form.symptomes }}
+                    <div class="help-text">Listez tous les symptômes du patient</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.temperature.id_for_label }}">Température (°C)</label>
+                    {{ form.temperature }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.tension_arterielle.id_for_label }}">Tension Artérielle</label>
+                    {{ form.tension_arterielle }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.poids.id_for_label }}">Poids (kg)</label>
+                    {{ form.poids }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.taille.id_for_label }}">Taille (cm)</label>
+                    {{ form.taille }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Diagnostic et Traitement -->
+        <div class="form-section">
+            <h3>💊 Diagnostic et Traitement</h3>
+            <div class="form-grid">
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.diagnostic.id_for_label }}">
+                        Diagnostic Principal <span class="required">*</span>
+                    </label>
+                    {{ form.diagnostic }}
+                </div>
+                
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.diagnostic_differentiel.id_for_label }}">Diagnostic Différentiel</label>
+                    {{ form.diagnostic_differentiel }}
+                    <div class="help-text">Autres diagnostics possibles à considérer</div>
+                </div>
+                
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.examens_complementaires.id_for_label }}">Examens Complémentaires</label>
+                    {{ form.examens_complementaires }}
+                    <div class="help-text">Radiographies, analyses, etc.</div>
+                </div>
+                
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.prescription.id_for_label }}">Prescription</label>
+                    {{ form.prescription }}
+                    <div class="help-text">Médicaments prescrits</div>
+                </div>
+                
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.posologie.id_for_label }}">Posologie</label>
+                    {{ form.posologie }}
+                    <div class="help-text">Dosage et fréquence des médicaments</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Suivi -->
+        <div class="form-section">
+            <h3>📅 Suivi et Recommandations</h3>
+            <div class="form-grid">
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.notes_medicales.id_for_label }}">Notes Médicales</label>
+                    {{ form.notes_medicales }}
+                </div>
+                
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.recommandations.id_for_label }}">Recommandations au Patient</label>
+                    {{ form.recommandations }}
+                    <div class="help-text">Conseils et instructions pour le patient</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.date_prochain_rdv.id_for_label }}">Prochain Rendez-vous</label>
+                    {{ form.date_prochain_rdv }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.urgence.id_for_label }}">Niveau d'Urgence</label>
+                    {{ form.urgence }}
+                </div>
+                
+                <div class="form-group form-grid-full">
+                    <label for="{{ form.statut.id_for_label }}">Statut du Dossier</label>
+                    {{ form.statut }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'dossiers:liste' %}" class="btn btn-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

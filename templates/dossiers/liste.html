@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Dossiers Médicaux{% endblock %}
+
+{% block content %}
+<style>
+    .dossiers-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: #3498db;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #2980b9;
+    }
+    
+    .btn-success {
+        background: #27ae60;
+        color: white;
+    }
+    
+    .btn-warning {
+        background: #f39c12;
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .summary-number {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .summary-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .dossiers-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .dossiers-table thead {
+        background: #34495e;
+        color: white;
+    }
+    
+    .dossiers-table th,
+    .dossiers-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ecf0f1;
+    }
+    
+    .dossiers-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .badge-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .urgence-faible { color: #27ae60; }
+    .urgence-moyenne { color: #f39c12; }
+    .urgence-elevee { color: #e67e22; }
+    .urgence-critique { color: #e74c3c; }
+    
+    .actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7f8c8d;
+    }
+    
+    .empty-state i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+</style>
+
+<div class="dossiers-header">
+    <div>
+        <h2>📋 Mes Dossiers Médicaux</h2>
+        <p style="color: #7f8c8d;">Gestion et suivi des dossiers patients</p>
+    </div>
+    <a href="{% url 'dossiers:creer' %}" class="btn btn-primary">
+        ➕ Nouveau Dossier
+    </a>
+</div>
+
+
+<!-- Formulaire de recherche avancée -->
+<div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <h3 style="color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #3498db;">
+        🔍 Recherche Avancée
+    </h3>
+    <form method="get" action="">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Recherche générale</label>
+                <input type="text" name="search" placeholder="Patient, diagnostic, motif..." 
+                       value="{{ search_query }}" 
+                       style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px; box-sizing: border-box;">
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Statut</label>
+                <select name="statut" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+                    <option value="">Tous</option>
+                    <option value="ouvert">Ouvert</option>
+                    <option value="ferme">Fermé</option>
+                    <option value="en_attente">En attente</option>
+                    <option value="archive">Archivé</option>
+                </select>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Urgence</label>
+                <select name="urgence" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+                    <option value="">Toutes</option>
+                    <option value="faible">Faible</option>
+                    <option value="moyenne">Moyenne</option>
+                    <option value="elevee">Élevée</option>
+                    <option value="critique">Critique</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Date début</label>
+                <input type="date" name="date_debut" value="{{ date_debut }}"
+                       style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Date fin</label>
+                <input type="date" name="date_fin" value="{{ date_fin }}"
+                       style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Trier par</label>
+                <select name="ordre" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+                    <option value="-date_consultation">Plus récent</option>
+                    <option value="date_consultation">Plus ancien</option>
+                    <option value="patient__nom">Patient A-Z</option>
+                    <option value="-urgence">Urgence</option>
+                </select>
+            </div>
+        </div>
+        
+        <div>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: #3498db; color: white; margin-right: 10px;">
+                🔍 Rechercher
+            </button>
+            <a href="{% url 'dossiers:liste' %}" class="btn btn-secondary" style="padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: #95a5a6; color: white; text-decoration: none; display: inline-block;">
+                🔄 Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
+
+
+<div class="stats-summary">
+    <div class="summary-card">
+        <div class="summary-label">Total Dossiers</div>
+        <div class="summary-number">{{ total }}</div>
+    </div>
+    <div class="summary-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <div class="summary-label">Dossiers Ouverts</div>
+        <div class="summary-number">{{ ouverts }}</div>
+    </div>
+    <div class="summary-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <div class="summary-label">Dossiers Fermés</div>
+        <div class="summary-number">{{ total|add:"-"|add:ouverts }}</div>
+    </div>
+</div>
+
+{% if dossiers %}
+<table class="dossiers-table">
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Date Consultation</th>
+            <th>Motif</th>
+            <th>Diagnostic</th>
+            <th>Urgence</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dossier in dossiers %}
+        <tr>
+            <td>
+                <strong>{{ dossier.patient.nom_complet }}</strong><br>
+                <small style="color: #7f8c8d;">{{ dossier.patient.age }} ans</small>
+            </td>
+            <td>{{ dossier.date_consultation|date:"d/m/Y H:i" }}</td>
+            <td>{{ dossier.motif_consultation|truncatewords:5 }}</td>
+            <td>{{ dossier.diagnostic|truncatewords:5 }}</td>
+            <td>
+                <span class="urgence-{{ dossier.urgence }}">
+                    {% if dossier.urgence == 'critique' %}🔴
+                    {% elif dossier.urgence == 'elevee' %}🟠
+                    {% elif dossier.urgence == 'moyenne' %}🟡
+                    {% else %}🟢{% endif %}
+                    {{ dossier.get_urgence_display }}
+                </span>
+            </td>
+            <td>
+                {% if dossier.statut == 'ouvert' %}
+                    <span class="badge badge-success">Ouvert</span>
+                {% elif dossier.statut == 'ferme' %}
+                    <span class="badge badge-danger">Fermé</span>
+                {% elif dossier.statut == 'en_attente' %}
+                    <span class="badge badge-warning">En attente</span>
+                {% else %}
+                    <span class="badge badge-info">Archivé</span>
+                {% endif %}
+            </td>
+            <td>
+                <div class="actions">
+                    <a href="{% url 'dossiers:detail' dossier.pk %}" class="btn btn-primary btn-sm">👁️ Voir</a>
+                    <a href="{% url 'dossiers:modifier' dossier.pk %}" class="btn btn-warning btn-sm">✏️ Modifier</a>
+                    <a href="{% url 'dossiers:exporter_pdf' dossier.pk %}" class="btn btn-success btn-sm">📄 PDF</a>
+                 </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <div>📋</div>
+    <h3>Aucun dossier médical</h3>
+    <p>Commencez par créer votre premier dossier patient</p>
+    <a href="{% url 'dossiers:creer' %}" class="btn btn-primary">Créer un dossier</a>
+</div>
+{% endif %}
+
+{% endblock %}

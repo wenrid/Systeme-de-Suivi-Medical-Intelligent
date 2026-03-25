@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Administrateur{% endblock %}
+
+{% block content %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-left: 5px solid #3498db;
+    }
+    
+    .stat-card.users { border-left-color: #9b59b6; }
+    .stat-card.patients { border-left-color: #3498db; }
+    .stat-card.dossiers { border-left-color: #e74c3c; }
+    .stat-card.activity { border-left-color: #27ae60; }
+    
+    .stat-number {
+        font-size: 36px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 10px 0;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #7f8c8d;
+        text-transform: uppercase;
+    }
+    
+    .section-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .section-card h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .action-btn {
+        padding: 15px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: white;
+        text-align: center;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .btn-users { background: #9b59b6; }
+    .btn-stats { background: #3498db; }
+    .btn-patients { background: #27ae60; }
+    .btn-dossiers { background: #e67e22; }
+    
+    .medecin-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<div class="admin-header">
+    <h1>👨‍💼 Administrateur - {{ user.get_full_name }}</h1>
+    <p>Gestion complète du système médical</p>
+</div>
+
+<!-- Statistiques principales -->
+<div class="stats-grid">
+    <div class="stat-card users">
+        <div class="stat-label">👥 Total Utilisateurs</div>
+        <div class="stat-number">{{ total_users }}</div>
+        <div style="color: #7f8c8d; font-size: 12px;">
+            Médecins: {{ total_medecins }} | Analystes: {{ total_analystes }} | Admins: {{ total_admins }}
+        </div>
+    </div>
+    
+    <div class="stat-card patients">
+        <div class="stat-label">🏥 Total Patients</div>
+        <div class="stat-number">{{ total_patients }}</div>
+        <div style="color: #27ae60; font-size: 12px;">
+            +{{ nouveaux_patients }} cette semaine
+        </div>
+    </div>
+    
+    <div class="stat-card dossiers">
+        <div class="stat-label">📋 Total Dossiers</div>
+        <div class="stat-number">{{ total_dossiers }}</div>
+        <div style="color: #e74c3c; font-size: 12px;">
+            {{ dossiers_urgents }} urgents
+        </div>
+    </div>
+    
+    <div class="stat-card activity">
+        <div class="stat-label">⚡ Activité Récente</div>
+        <div class="stat-number">{{ nouvelles_consultations }}</div>
+        <div style="color: #3498db; font-size: 12px;">
+            Consultations cette semaine
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="section-card">
+    <h3>🚀 Actions Rapides</h3>
+    <div class="action-buttons">
+        <a href="{% url 'admin_views:gestion_utilisateurs' %}" class="action-btn btn-users">
+            👥 Gérer les Utilisateurs
+        </a>
+        <a href="{% url 'admin_views:creer_utilisateur' %}" class="action-btn btn-users">
+            ➕ Créer un Utilisateur
+        </a>
+        <a href="{% url 'admin_views:statistiques_globales' %}" class="action-btn btn-stats">
+            📊 Statistiques Globales
+        </a>
+        <a href="{% url 'patients:liste_patients' %}" class="action-btn btn-patients">
+            🏥 Tous les Patients
+        </a>
+        <a href="{% url 'dossiers:liste' %}" class="action-btn btn-dossiers">
+            📋 Tous les Dossiers
+        </a>
+        <a href="{% url 'stats_medicales:analyse_ia_dashboard' %}" class="action-btn btn-stats">
+            🤖 Analyses IA
+        </a>
+    </div>
+</div>
+
+<!-- État du système -->
+<div class="section-card">
+    <h3>💡 État du Système</h3>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+        <div>
+            <h4>Utilisateurs</h4>
+            <p>✅ Médecins actifs : {{ medecins_actifs_count }}/{{ total_medecins }}</p>
+            <p>✅ Analystes actifs : {{ analystes_actifs_count }}/{{ total_analystes }}</p>
+        </div>
+        <div>
+            <h4>Dossiers</h4>
+            <p>🟢 Ouverts : {{ dossiers_ouverts }}</p>
+            <p>⚪ Fermés : {{ dossiers_fermes }}</p>
+            <p>🔴 Urgents : {{ dossiers_urgents }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Médecins les plus actifs -->
+<div class="section-card">
+    <h3>🏆 Top 5 Médecins Actifs</h3>
+    {% if medecins_actifs %}
+        {% for medecin in medecins_actifs %}
+        <div class="medecin-item">
+            <div>
+                <strong>Dr. {{ medecin.get_full_name }}</strong>
+                <br>
+                <small style="color: #7f8c8d;">{{ medecin.specialite|default:"Non spécifié" }}</small>
+            </div>
+            <div>
+                <span style="background: #3498db; color: white; padding: 5px 15px; border-radius: 15px; font-weight: bold;">
+                    {{ medecin.nb_dossiers }} dossiers
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucun médecin actif pour le moment</p>
+    {% endif %}
+</div>
+
+{% endblock %}

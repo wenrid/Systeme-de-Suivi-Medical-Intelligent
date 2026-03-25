@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord Médecin{% endblock %}
+
+{% block content %}
+<h2>- Dr. {{ user.get_full_name }}</h2>
+<p>Spécialité: {{ user.specialite|default:"Non spécifiée" }}</p>
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_patients }}</div>
+        <div>Mes patients</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_dossiers }}</div>
+        <div>Dossiers créés</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ dossiers_ouverts }}</div>
+        <div>Dossiers ouverts</div>
+    </div>
+</div>
+
+<h3>Dernières consultations</h3>
+<table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #ecf0f1;">
+        <th style="padding: 10px; text-align: left;">Patient</th>
+        <th style="padding: 10px; text-align: left;">Date</th>
+        <th style="padding: 10px; text-align: left;">Diagnostic</th>
+        <th style="padding: 10px; text-align: left;">Statut</th>
+    </tr>
+    {% for dossier in derniers_dossiers %}
+    <tr>
+        <td style="padding: 10px;">{{ dossier.patient.nom_complet }}</td>
+        <td style="padding: 10px;">{{ dossier.date_consultation|date:"d/m/Y" }}</td>
+        <td style="padding: 10px;">{{ dossier.diagnostic|truncatewords:5 }}</td>
+        <td style="padding: 10px;">{{ dossier.get_statut_display }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4" style="padding: 10px; text-align: center;">Aucun dossier</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div style="margin-top: 20px;">
+    <a href="{% url 'patients:liste_patients' %}" style="background: #3498db; color: white; padding: 10px 15px; text-decoration: none; border-radius: 3px; margin-right: 10px;">Gérer les patients</a>
+    <a href="{% url 'dossiers:liste' %}" style="background: #2ecc71; color: white; padding: 10px 15px; text-decoration: none; border-radius: 3px;">Gérer les dossiers</a>
+</div>
+{% endblock %}

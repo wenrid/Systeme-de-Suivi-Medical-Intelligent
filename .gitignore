@@ -1,0 +1,58 @@
+# ===========================
+# ENVIRONNEMENTS VIRTUELS
+# ===========================
+medical_system_env/
+venv/
+env/
+.venv/
+
+# ===========================
+# DONNÉES SENSIBLES ⚠️
+# ===========================
+.env
+*.env
+local_settings.py
+
+# ===========================
+# PYTHON
+# ===========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ===========================
+# DJANGO
+# ===========================
+db.sqlite3
+db.sqlite3-journal
+*.log
+media/
+logs/
+
+# ===========================
+# FICHIERS STATIQUES COLLECTÉS
+# ===========================
+staticfiles/
+collected_static/
+
+# ===========================
+# SYSTÈME / IDE
+# ===========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===========================
+# WINDOWS
+# ===========================
+desktop.ini
+$RECYCLE.BIN/

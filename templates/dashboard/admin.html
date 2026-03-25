@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord Administrateur{% endblock %}
+
+{% block content %}
+<h2>Tableau de bord - Administrateur {{ user.get_full_name }}</h2>
+<p>Administration du système médical</p>
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_users }}</div>
+        <div>Utilisateurs totaux</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ medecins_actifs }}</div>
+        <div>Médecins actifs</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ analystes_actifs }}</div>
+        <div>Analystes actifs</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_patients }}</div>
+        <div>Patients enregistrés</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+    <div>
+        <h3>Gestion des utilisateurs</h3>
+        <a href="{% url 'admin:authentication_user_changelist' %}" style="display: block; background: #3498db; color: white; padding: 10px; text-decoration: none; border-radius: 3px; margin: 5px 0;">Gérer les utilisateurs</a>
+        <a href="{% url 'admin:auth_group_changelist' %}" style="display: block; background: #9b59b6; color: white; padding: 10px; text-decoration: none; border-radius: 3px; margin: 5px 0;">Gérer les groupes</a>
+    </div>
+    
+    <div>
+        <h3>Sécurité et maintenance</h3>
+        <button style="display: block; width: 100%; background: #e67e22; color: white; border: none; padding: 10px; border-radius: 3px; margin: 5px 0;">Sauvegarde système</button>
+        <button style="display: block; width: 100%; background: #95a5a6; color: white; border: none; padding: 10px; border-radius: 3px; margin: 5px 0;">Logs d'audit</button>
+    </div>
+</div>
+{% endblock %} 

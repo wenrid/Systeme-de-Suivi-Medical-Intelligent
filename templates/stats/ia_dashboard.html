@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Analyses IA - Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .ia-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .section-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .section-card h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+    }
+    
+    .risque-critique { color: #e74c3c; font-weight: bold; }
+    .risque-eleve { color: #e67e22; font-weight: bold; }
+    .risque-modere { color: #f39c12; font-weight: bold; }
+    .risque-faible { color: #27ae60; font-weight: bold; }
+    
+    .patient-card {
+        border-left: 4px solid #e74c3c;
+        padding: 15px;
+        background: #f8f9fa;
+        margin-bottom: 15px;
+        border-radius: 5px;
+    }
+    
+    .score-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 18px;
+    }
+    
+    .score-critique { background: #e74c3c; color: white; }
+    .score-eleve { background: #e67e22; color: white; }
+    .score-modere { background: #f39c12; color: white; }
+    .score-faible { background: #27ae60; color: white; }
+    
+    .tranche-card {
+        background: #ecf0f1;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .zone-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .zone-risque-eleve { background: #fadbd8; border-left: 4px solid #e74c3c; }
+    .zone-surveiller { background: #fdeaa8; border-left: 4px solid #f39c12; }
+    .zone-normale { background: #d5f4e6; border-left: 4px solid #27ae60; }
+    
+    .prediction {
+        padding: 10px;
+        background: #d1ecf1;
+        border-left: 3px solid #0c5460;
+        margin: 10px 0;
+        border-radius: 3px;
+    }
+    
+    .facteur {
+        display: inline-block;
+        background: #3498db;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        margin: 5px;
+        font-size: 12px;
+    }
+</style>
+
+<div class="ia-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1>🤖 Analyses IA - Intelligence Artificielle Médicale</h1>
+        <p>Détection automatique des risques, prédictions et recommandations</p>
+    </div>
+    <a href="{% url 'stats_medicales:prediction_epidemies' %}" class="btn btn-danger" style="background: white; color: #e74c3c; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: 600; border: 2px solid white;">
+        🦠 Prédiction d'Épidémies
+    </a>
+</div>
+
+<!-- Section 1 : Patients à risque -->
+<div class="section-card">
+    <h3>🚨 Patients à Risque Élevé (Top 10)</h3>
+    
+    {% if patients_risque %}
+        {% for item in patients_risque %}
+        <div class="patient-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0;">{{ item.patient.nom_complet }}</h4>
+                    <p style="margin: 5px 0; color: #7f8c8d;">
+                        {{ item.patient.age }} ans | {{ item.patient.ville }}
+                    </p>
+                </div>
+                <div>
+                    <span class="score-badge score-{% if item.niveau == 'Critique' %}critique{% elif item.niveau == 'Élevé' %}eleve{% elif item.niveau == 'Modéré' %}modere{% else %}faible{% endif %}">
+                        Score: {{ item.score }}/100
+                    </span>
+                    <p style="margin: 5px 0; text-align: center;">
+                        <span class="risque-{% if item.niveau == 'Critique' %}critique{% elif item.niveau == 'Élevé' %}eleve{% elif item.niveau == 'Modéré' %}modere{% else %}faible{% endif %}">
+                            {{ item.niveau }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px;">
+                <strong>Facteurs de risque :</strong><br>
+                {% for facteur in item.facteurs %}
+                    <span class="facteur">{{ facteur }}</span>
+                {% endfor %}
+            </div>
+            
+            <div style="margin-top: 10px;">
+                <a href="{% url 'stats_medicales:patient_risque_detail' item.patient.id %}" class="btn btn-sm btn-primary">
+                    Voir détails & recommandations
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucun patient à risque identifié</p>
+    {% endif %}
+</div>
+
+<!-- Section 2 : Analyse par tranche d'âge -->
+<div class="section-card">
+    <h3>📊 Analyse Prédictive par Tranche d'Âge</h3>
+    
+    {% for tranche, data in analyse_age.items %}
+    <div class="tranche-card">
+        <h4>{{ tranche }} ans ({{ data.total }} patients)</h4>
+        
+        <div style="margin: 15px 0;">
+            <strong>Score de risque moyen :</strong> 
+            <span class="score-badge score-{% if data.risque_moyen >= 70 %}critique{% elif data.risque_moyen >= 50 %}eleve{% elif data.risque_moyen >= 30 %}modere{% else %}faible{% endif %}">
+                {{ data.risque_moyen }}/100
+            </span>
+        </div>
+        
+        {% if data.maladies %}
+        <div style="margin: 15px 0;">
+            <strong>Maladies fréquentes :</strong>
+            <table class="table table-sm" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>Maladie</th>
+                        <th>Cas</th>
+                        <th>Pourcentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for maladie, stats in data.maladies.items %}
+                    {% if stats.count > 0 %}
+                    <tr>
+                        <td>{{ maladie }}</td>
+                        <td>{{ stats.count }}</td>
+                        <td>
+                            <strong {% if stats.pourcentage > 30 %}style="color: #e74c3c;"{% elif stats.pourcentage > 15 %}style="color: #f39c12;"{% else %}style="color: #27ae60;"{% endif %}>
+                                {{ stats.pourcentage }}%
+                            </strong>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if data.predictions %}
+        <div style="margin: 15px 0;">
+            <strong>🔮 Prédictions IA :</strong>
+            {% for prediction in data.predictions %}
+                <div class="prediction">{{ prediction }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Section 3 : Analyse géographique -->
+<div class="section-card">
+    <h3>🗺️ Analyse Géographique des Maladies</h3>
+    
+    {% for ville, data in analyse_geo.items %}
+    <div class="zone-card {% if 'risque élevé' in data.niveau_zone %}zone-risque-eleve{% elif 'surveiller' in data.niveau_zone %}zone-surveiller{% else %}zone-normale{% endif %}">
+        <h4>{{ ville }} ({{ data.total_patients }} patients)</h4>
+        
+        <div style="margin: 10px 0;">
+            <strong>Statut :</strong> {{ data.niveau_zone }}<br>
+            <strong>Taux de maladies :</strong> {{ data.taux_maladie_global }}%<br>
+            <strong>Maladie dominante :</strong> {{ data.maladie_dominante }}
+        </div>
+        
+        {% if data.maladies %}
+        <div style="margin: 10px 0;">
+            <strong>Répartition des maladies :</strong>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                {% for maladie, stats in data.maladies.items %}
+                {% if stats.count > 0 %}
+                <div style="background: white; padding: 10px; border-radius: 5px; text-align: center;">
+                    <strong>{{ maladie }}</strong><br>
+                    {{ stats.count }} cas ({{ stats.pourcentage }}%)
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if data.predictions %}
+        <div style="margin: 10px 0;">
+            <strong>🔮 Prédictions & Recommandations :</strong>
+            {% for prediction in data.predictions %}
+                <div class="prediction">{{ prediction }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center mb-4">
+    <a href="{% url 'core:dashboard_analyste' %}" class="btn btn-secondary">
+        ← Retour au dashboard
+    </a>
+</div>
+
+{% endblock %}
