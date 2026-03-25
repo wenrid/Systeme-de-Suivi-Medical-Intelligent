@@ -464,7 +464,9 @@ git push origin feature/amelioration
 
 ## 👥 Auteurs
 
-- **Nom du Développeur** - *Développeur Principal* - [GitHub](https://github.com/votre-username)
+- **Wenchel RIDORE** - *Développeur Principal* - [GitHub](https://github.com/wenrid) - rwenchella@gmail.com
+- **Rabbin KIMBANGI MENAKUNTIMA** - *Développeur* - [GitHub](https://github.com/rabbikimbangi) - rabbiskentkimbangi@gmail.com
+- **Kandolo HERMAN** - *Développeur* - Hermankandolo2022@gmail.com
 
 ---
 
@@ -485,9 +487,9 @@ Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de
 
 ## 📞 Contact
 
-**Email :** votre.email@example.com  
-**GitHub :** [https://github.com/votre-username](https://github.com/votre-username)  
-**LinkedIn :** [Votre Profil](https://linkedin.com/in/votre-profil)
+**Wenchel RIDORE** : rwenchella@gmail.com | [GitHub](https://github.com/wenrid)  
+**Rabbin KIMBANGI** : rabbiskentkimbangi@gmail.com | [GitHub](https://github.com/rabbikimbangi)  
+**Kandolo HERMAN** : Hermankandolo2022@gmail.com
 
 ---
 
