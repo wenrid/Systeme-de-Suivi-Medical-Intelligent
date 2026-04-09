@@ -1,31 +1,35 @@
-# Django
+# =============================================
+# SSMI - Système de Suivi Médical Intelligent
+# requirements.txt
+# =============================================
+
+# --- Framework principal ---
 Django==5.1.4
-asgiref==3.9.2
-sqlparse==0.5.3
-tzdata==2025.2
 
-# Base de données
-psycopg2-binary>=2.9
+# --- Base de données PostgreSQL ---
+psycopg2-binary==2.9.10
 
-# Variables d'environnement
-python-decouple>=3.8
+# --- Intelligence Artificielle & Data Science ---
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
 
-# API REST
-djangorestframework>=3.14
-django-cors-headers>=4.3
+# --- Génération de rapports PDF ---
+reportlab==4.2.5
+weasyprint==62.3
 
-# Images
-Pillow>=10.0
+# --- Sécurité & Utilitaires Django ---
+Pillow==11.0.0
+python-decouple==3.8
+django-crispy-forms==2.3
+crispy-bootstrap5==2024.10
 
-# PDF
-reportlab>=4.0
-xhtml2pdf>=0.2.11
+# --- Chiffrement données sensibles ---
+django-encrypted-model-fields==0.6.5
+cryptography==43.0.3
 
-# IA / Data Science
-numpy>=1.26
-pandas>=2.1
-scikit-learn>=1.3
-matplotlib>=3.8
+# --- API REST (pour la suite) ---
+djangorestframework==3.15.2
 
-# Production
-whitenoise>=6.6
+# --- Gestion des variables d'environnement ---
+python-dotenv==1.0.1

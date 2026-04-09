@@ -56,3 +56,23 @@ Thumbs.db
 # ===========================
 desktop.ini
 $RECYCLE.BIN/
+
+# ===========================
+# ENVIRONNEMENT VIRTUEL SSMI
+# ===========================
+ssmi/
+
+# ===========================
+# FICHIERS CONFIGURATION SENSIBLES
+# ===========================
+settings.py
+asgi.py
+wsgi.py
+urls.py
+__init__.py
+
+# ===========================
+# MODELES PYTORCH
+# ===========================
+*.pth
+*.pkl

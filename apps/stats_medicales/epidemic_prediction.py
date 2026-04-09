@@ -49,8 +49,8 @@ class EpidemicPredictor:
         # Détecter les pics
         pics = EpidemicPredictor._detecter_pics(totaux, dates)
         
-        # Prédiction simple (moyenne mobile + tendance)
-        predictions = EpidemicPredictor._predire_simple(totaux, jours_prediction)
+        # Prédiction Lstm (moyenne mobile + tendance)
+        predictions = EpidemicPredictor._predire_lstm(totaux, jours_prediction)
         
         # Évaluer le niveau de risque
         risque = EpidemicPredictor._evaluer_risque_epidemique(totaux, predictions)
@@ -240,27 +240,88 @@ class EpidemicPredictor:
         return pics
     
     @staticmethod
-    def _predire_simple(valeurs, jours):
-        """Prédiction simple basée sur la tendance"""
-        if len(valeurs) < 5:
-            return []
-        
-        # Calculer la tendance (régression linéaire simple)
-        x = np.arange(len(valeurs))
-        y = np.array(valeurs)
-        
-        # Coefficient de tendance
-        tendance = np.polyfit(x, y, 1)[0]
-        
-        derniere_valeur = valeurs[-1]
+    def _predire_lstm(valeurs, jours):
+        """
+        Prédiction basée sur le modèle LSTM entraîné
+        Remplace la régression linéaire
+        """
+        import torch
+        import torch.nn as nn
+        import pickle
+        import os
+
+        # ── Définition du modèle LSTM ─────────────────────────
+        class LSTMModel(nn.Module):
+            def __init__(self, input_size=1, hidden_size=32, num_layers=2):
+                super(LSTMModel, self).__init__()
+                self.lstm = nn.LSTM(input_size, hidden_size,
+                                num_layers, batch_first=True)
+                self.fc = nn.Linear(hidden_size, 1)
+
+            def forward(self, x):
+                out, _ = self.lstm(x)
+                out = self.fc(out[:, -1, :])
+                return out
+
+        # ── Chemins des modèles sauvegardés ──────────────────
+        base_dir = os.path.dirname(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
+        ))
+        model_path = os.path.join(base_dir, 'models', 'lstm_paludisme.pth')
+        scaler_path = os.path.join(base_dir, 'models', 'scaler_lstm.pkl')
+
+        # ── Fallback régression linéaire si modèle absent ────
+        if not os.path.exists(model_path) or not os.path.exists(scaler_path):
+            x = np.arange(len(valeurs))
+            y = np.array(valeurs, dtype=float)
+            tendance = np.polyfit(x, y, 1)[0]
+            derniere_valeur = valeurs[-1]
+            predictions = []
+            for i in range(1, jours + 1):
+                prediction = derniere_valeur + (tendance * i)
+                prediction = max(0, round(prediction, 1))
+                predictions.append(prediction)
+            return predictions
+
+        # ── Charger le modèle et le scaler ───────────────────
+        model = LSTMModel()
+        model.load_state_dict(torch.load(
+            model_path, map_location=torch.device('cpu')
+        ))
+        model.eval()
+
+        with open(scaler_path, 'rb') as f:
+            scaler = pickle.load(f)
+
+        # ── Préparer les données ──────────────────────────────
+        taille_fenetre = 7
+        valeurs_array = np.array(
+            valeurs[-taille_fenetre:], dtype=float
+        ).reshape(-1, 1)
+        valeurs_norm = scaler.transform(valeurs_array)
+        input_tensor = torch.FloatTensor(
+            valeurs_norm.reshape(1, taille_fenetre, 1)
+        )
+
+        # ── Prédire jour par jour ─────────────────────────────
         predictions = []
-        
-        for i in range(1, jours + 1):
-            prediction = derniere_valeur + (tendance * i)
-            prediction = max(0, round(prediction, 1))
-            predictions.append(prediction)
-        
-        return predictions
+        input_actuel = input_tensor.clone()
+
+        with torch.no_grad():
+            for _ in range(jours):
+                prediction = model(input_actuel)
+                predictions.append(prediction.item())
+                nouveau_jour = prediction.unsqueeze(0)
+                input_actuel = torch.cat(
+                    [input_actuel[:, 1:, :], nouveau_jour], dim=1
+                )
+
+        # ── Dénormaliser ──────────────────────────────────────
+        predictions_array = np.array(predictions).reshape(-1, 1)
+        predictions_reelles = scaler.inverse_transform(predictions_array)
+        predictions_reelles = np.clip(predictions_reelles, 0, None)
+
+        return [round(float(p), 1) for p in predictions_reelles.flatten()]
     
     @staticmethod
     def _evaluer_risque_epidemique(historique, predictions):
