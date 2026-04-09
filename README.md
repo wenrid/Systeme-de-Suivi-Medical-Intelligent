@@ -1,11 +1,12 @@
 # 🏥 Système de Suivi Médical Intelligent (SSMI)
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Django](https://img.shields.io/badge/Django-5.1.4-green.svg)
-![Python](https://img.shields.io/badge/Python-3.11+-yellow.svg)
+![Django](https://img.shields.io/badge/Django-5.2-green.svg)
+![Python](https://img.shields.io/badge/Python-3.12+-yellow.svg)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)
 ![License](https://img.shields.io/badge/license-MIT-purple.svg)
 
-> Un système intelligent de gestion médicale avec intelligence artificielle embarquée pour la détection précoce des épidémies et l'analyse prédictive des risques sanitaires.
+> Un système intelligent de gestion médicale avec intelligence artificielle embarquée pour la détection précoce des épidémies, l'analyse prédictive des risques sanitaires et la génération de données médicales synthétiques.
 
 ---
 
@@ -14,10 +15,12 @@
 - [À Propos](#-à-propos)
 - [Fonctionnalités Principales](#-fonctionnalités-principales)
 - [Modules d'Intelligence Artificielle](#-modules-dintelligence-artificielle)
+- [Pipeline IA](#-pipeline-ia)
 - [Technologies Utilisées](#-technologies-utilisées)
 - [Installation](#-installation)
 - [Utilisation](#-utilisation)
 - [Structure du Projet](#-structure-du-projet)
+- [Notebooks Jupyter](#-notebooks-jupyter)
 - [Documentation](#-documentation)
 - [Contribution](#-contribution)
 - [Auteurs](#-auteurs)
@@ -30,14 +33,17 @@
 Le **Système de Suivi Médical Intelligent (SSMI)** est une plateforme web complète de gestion médicale développée avec Django. Il intègre des modules d'intelligence artificielle avancés pour :
 
 - Identifier automatiquement les patients à risque
-- Prédire les épidémies 30 jours à l'avance
+- Prédire les épidémies grâce à un modèle LSTM intégré en production
+- Générer des données médicales synthétiques réalistes via TimeGAN
 - Détecter les zones géographiques à forte prévalence de maladies
 - Analyser les tendances par tranche d'âge
 - Optimiser l'allocation des ressources médicales
 
 ### 🌟 Points Forts
 
-✅ **IA Prédictive Native** - Intelligence artificielle intégrée dès la conception  
+✅ **LSTM Intégré en Production** - Remplace la régression linéaire · perte finale 0.001  
+✅ **TimeGAN Paludisme** - Génération de données synthétiques · MMD=0.278 · DTW=2.285  
+✅ **Pipeline Complet** - TimeGAN → données synthétiques → LSTM enrichi  
 ✅ **Détection Précoce** - Anticipe les épidémies 2-3 semaines à l'avance  
 ✅ **Analyse Géographique** - Identification des hotspots épidémiques  
 ✅ **Multi-Rôles** - Admin, Médecin, Analyste avec permissions granulaires  
@@ -137,15 +143,24 @@ Le **Système de Suivi Médical Intelligent (SSMI)** est une plateforme web comp
 
 ---
 
-### 4️⃣ Prédiction d'Épidémies
+### 4️⃣ Prédiction d'Épidémies — LSTM
 
-**Objectif :** Anticiper les épidémies en analysant les tendances historiques.
+**Objectif :** Anticiper les épidémies en analysant les tendances historiques avec un modèle LSTM.
+
+**Architecture LSTM :**
+- 2 couches cachées · hidden_size=32
+- Fenêtre temporelle : 7 jours
+- Optimiseur : Adam (lr=0.01) · MSELoss
+- 200 epochs · Perte finale : **0.001**
+- 173 séquences d'entraînement · 180 jours
 
 **Processus :**
-1. **Collecte** : Analyse des 90-180 derniers jours
-2. **Détection** : Identification des pics anormaux (2 écarts-types)
-3. **Prédiction** : Régression linéaire sur 30 jours futurs
-4. **Évaluation** : Score de risque épidémique
+1. **Collecte** : Extraction des données depuis PostgreSQL (180 jours)
+2. **Nettoyage** : Interpolation linéaire des jours manquants
+3. **Normalisation** : MinMaxScaler
+4. **Séquences** : Fenêtres glissantes de 7 jours (173 séquences)
+5. **Entraînement** : LSTM 200 epochs
+6. **Prédiction** : 7 jours futurs
 
 **Niveaux de risque :**
 - 🔴 Critique (> 50% augmentation prévue)
@@ -157,12 +172,51 @@ Le **Système de Suivi Médical Intelligent (SSMI)** est une plateforme web comp
 
 ---
 
+### 5️⃣ Génération de Données Synthétiques — TimeGAN
+
+**Objectif :** Générer des données médicales synthétiques réalistes pour pallier le manque de données réelles soumises au RGPD.
+
+**Architecture TimeGAN :**
+- Générateur : bruit 32 dim → Linear 64 → LSTM 2 couches → sigmoid
+- Discriminateur : LSTM 2 couches → Linear → sigmoid
+- Optimiseur : Adam (lr=0.0001) · BCELoss · batch=16
+- 1 000 epochs · Générateur entraîné 2× par epoch
+
+**Entraîné spécifiquement sur le Paludisme :**
+- 173 séquences · 180 jours
+- Génère des séries cohérentes avec les vraies données
+
+**Métriques d'évaluation :**
+- MMD (Maximum Mean Discrepancy) = **0.278**
+- DTW (Dynamic Time Warping) = **2.285**
+
+---
+
+## 🔄 Pipeline IA
+```
+Données PostgreSQL (180 jours · 8 maladies · 4 046 consultations)
+        ↓
+TimeGAN Paludisme
+(173 séquences · 1 000 epochs · MMD=0.278 · DTW=2.285)
+        ↓
+100 séries synthétiques générées
+        ↓
+Fusion : 173 réelles + 100 synthétiques = 273 séquences
+        ↓
+LSTM entraîné sur dataset enrichi
+(perte finale 0.001 · prédictions 7 jours)
+        ↓
+Intégré dans epidemic_prediction.py en production
+```
+
+---
+
 ## 🛠️ Technologies Utilisées
 
 ### Backend
-- **Django 5.1.4** - Framework web Python
+- **Django 5.2** - Framework web Python
 - **PostgreSQL** - Base de données relationnelle
-- **Python 3.11+** - Langage de programmation
+- **Python 3.12+** - Langage de programmation
 
 ### Frontend
 - **Bootstrap 5** - Framework CSS responsive
@@ -170,12 +224,15 @@ Le **Système de Suivi Médical Intelligent (SSMI)** est une plateforme web comp
 - **JavaScript (ES6+)** - Interactivité
 
 ### Intelligence Artificielle
+- **PyTorch** - LSTM et TimeGAN
 - **NumPy** - Calculs numériques
 - **Pandas** - Analyse de données
-- **Scikit-learn** - Machine Learning
+- **Scikit-learn** - Normalisation et métriques
+- **Matplotlib** - Visualisation des séries temporelles
 
 ### Outils de Développement
-- **Git** - Contrôle de version
+- **Jupyter Notebook** - Développement et expérimentation IA
+- **Git / GitHub** - Contrôle de version
 - **VS Code** - Éditeur de code
 - **pip** - Gestionnaire de packages Python
 
@@ -185,7 +242,7 @@ Le **Système de Suivi Médical Intelligent (SSMI)** est une plateforme web comp
 
 ### Prérequis
 
-- Python 3.11 ou supérieur
+- Python 3.12 ou supérieur
 - PostgreSQL 14 ou supérieur
 - pip (gestionnaire de packages Python)
 - Git
@@ -193,28 +250,26 @@ Le **Système de Suivi Médical Intelligent (SSMI)** est une plateforme web comp
 ### Étapes d'Installation
 
 #### 1. Cloner le Repository
-
 ```bash
-git clone https://github.com/votre-username/ssmi.git
-cd ssmi
+git clone https://github.com/wenrid/Systeme-de-Suivi-Medical-Intelligent.git
+cd Systeme-de-Suivi-Medical-Intelligent
 ```
 
 #### 2. Créer un Environnement Virtuel
 
 **Windows :**
 ```bash
-python -m venv medical_system_env
-medical_system_env\Scripts\activate
+python -m venv ssmi
+ssmi\Scripts\activate
 ```
 
 **Linux/Mac :**
 ```bash
-python3 -m venv medical_system_env
-source medical_system_env/bin/activate
+python3 -m venv ssmi
+source ssmi/bin/activate
 ```
 
 #### 3. Installer les Dépendances
-
 ```bash
 pip install -r requirements.txt
 ```
@@ -222,7 +277,6 @@ pip install -r requirements.txt
 #### 4. Configurer la Base de Données
 
 Créez une base de données PostgreSQL :
-
 ```sql
 CREATE DATABASE medical_system;
 CREATE USER medical_user WITH PASSWORD 'votre_mot_de_passe';
@@ -230,7 +284,6 @@ GRANT ALL PRIVILEGES ON DATABASE medical_system TO medical_user;
 ```
 
 Modifiez `medical_system/settings.py` :
-
 ```python
 DATABASES = {
     'default': {
@@ -245,14 +298,12 @@ DATABASES = {
 ```
 
 #### 5. Appliquer les Migrations
-
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
 #### 6. Créer un Superutilisateur
-
 ```bash
 python manage.py createsuperuser
 ```
@@ -263,16 +314,14 @@ Suivez les instructions pour définir :
 - Password
 - Rôle (choisir `admin`)
 
-#### 7. Charger les Données de Test (Optionnel)
-
+#### 7. Générer les Données de Test
 ```bash
 python generer_data.py
 ```
 
-Cela crée 30 jours de consultations pour tester les modules IA.
+Génère : **249 patients · 4 046 consultations · 8 maladies · 180 jours**
 
 #### 8. Lancer le Serveur
-
 ```bash
 python manage.py runserver
 ```
@@ -329,14 +378,28 @@ Accédez à l'application : **http://localhost:8000**
 
 #### Prédiction d'Épidémies
 1. Menu **Analyses IA** → **Prédiction d'Épidémies**
-2. Graphiques de tendances
-3. Prédictions sur 30 jours
+2. Graphiques de tendances LSTM
+3. Prédictions sur 7 jours
 4. Évaluation du risque
 
 ---
 
-## 📁 Structure du Projet
+## 📓 Notebooks Jupyter
 
+| Notebook | Description | Résultats |
+|---|---|---|
+| `lstm_ssmi.ipynb` | Entraînement LSTM sur Paludisme | Perte=0.001 · MAE=0.261 |
+| `timegan_ssmi.ipynb` | TimeGAN sur 8 maladies · 1 384 séquences | MMD=0.278 · DTW=2.285 |
+| `pipeline_complet.ipynb` | Pipeline complet TimeGAN Paludisme → LSTM | 273 séquences enrichies |
+
+### Lancer les Notebooks
+```bash
+jupyter notebook
+```
+
+---
+
+## 📁 Structure du Projet
 ```
 medical_system/
 │
@@ -346,8 +409,8 @@ medical_system/
 │   ├── patients/            # Gestion patients
 │   ├── dossiers/            # Dossiers médicaux
 │   └── stats_medicales/     # Statistiques et IA
-│       ├── ml_analysis.py           # Analyses IA
-│       ├── epidemic_prediction.py   # Prédiction épidémies
+│       ├── ml_analysis.py           # Score risque · Analyse âge · Géographie
+│       ├── epidemic_prediction.py   # Prédiction LSTM (intégré en production)
 │       └── pdf_reports.py           # Génération PDF
 │
 ├── medical_system/
@@ -368,11 +431,14 @@ medical_system/
 │
 ├── media/                   # Fichiers uploadés
 │
-├── manage.py               # Commande Django
-├── requirements.txt        # Dépendances Python
-├── generer_data.py        # Script génération données test
-├── creer_hotspot.py       # Script création hotspot
-└── README.md              # Ce fichier
+├── lstm_ssmi.ipynb          # Notebook LSTM
+├── timegan_ssmi.ipynb       # Notebook TimeGAN
+├── pipeline_complet.ipynb   # Pipeline complet TimeGAN → LSTM
+├── generer_data.py          # Génération données réalistes (180 jours)
+├── creer_hotspot.py         # Script création hotspot épidémique
+├── manage.py                # Commande Django
+├── requirements.txt         # Dépendances Python
+└── README.md                # Ce fichier
 ```
 
 ---
@@ -417,16 +483,15 @@ python manage.py collectstatic
 #### Personnaliser les Seuils IA
 
 **Fichier :** `apps/stats_medicales/epidemic_prediction.py`
-
 ```python
-# Seuils de détection géographique (ligne ~180)
+# Seuils de détection géographique
 if taux > 80:      # Critique
 if taux > 50:      # Élevé
 if taux > 30:      # Modéré
 
-# Période d'analyse (ligne ~14)
-jours_historique = 90   # Modifier selon besoin
-jours_prediction = 30   # Modifier selon besoin
+# Période d'analyse
+jours_historique = 180  # Modifier selon besoin
+jours_prediction = 7    # Modifier selon besoin
 ```
 
 #### Modifier les Recommandations IA
@@ -481,6 +546,7 @@ Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de
 - Django Software Foundation pour l'excellent framework
 - Bootstrap pour le framework CSS
 - Chart.js pour les graphiques interactifs
+- PyTorch pour les modèles LSTM et TimeGAN
 - La communauté open-source Python
 
 ---
@@ -499,11 +565,13 @@ Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de
 
 - [ ] Application mobile (React Native)
 - [ ] Télémédecine intégrée
-- [ ] Module d'imagerie médicale
+- [ ] Module d'imagerie médicale avec Green AI
 - [ ] Intégration laboratoire
 - [ ] API REST complète
 - [ ] NLP pour transcription consultations
-- [ ] Vision par ordinateur pour analyse images
+- [ ] TimeGAN conditionnel sur données réelles (MOVER)
+- [ ] LSTM par maladie (un modèle spécifique par pathologie)
+- [ ] Modèles de diffusion conditionnels (WaveStitch)
 - [ ] Big Data et analytics avancés
 - [ ] Notifications push automatiques
 - [ ] Carte interactive des épidémies
@@ -512,17 +580,26 @@ Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de
 
 ## 📊 Statistiques du Projet
 
-- **Lignes de Code :** ~15,000+
-- **Applications Django :** 5
-- **Modèles de Données :** 10+
-- **Vues Fonctionnelles :** 35+
-- **Templates HTML :** 25+
-- **Modules IA :** 4
-- **Tests Unitaires :** En développement
+| Métrique | Valeur |
+|---|---|
+| Lignes de Code | ~15 000+ |
+| Applications Django | 5 |
+| Modèles de Données | 10+ |
+| Vues Fonctionnelles | 35+ |
+| Templates HTML | 25+ |
+| Modules IA | 5 |
+| Notebooks Jupyter | 3 |
+| Patients générés | 249 |
+| Consultations | 4 046 |
+| Maladies | 8 |
+| Jours d'historique | 180 |
+| Perte LSTM | 0.001 |
+| MMD TimeGAN | 0.278 |
+| DTW TimeGAN | 2.285 |
 
 ---
 
 <div align="center">
   <p>Développé avec ❤️ pour améliorer la santé publique</p>
-  <p>© 2025 Système de Suivi Médical Intelligent</p>
+  <p>© 2026 Système de Suivi Médical Intelligent</p>
 </div>
